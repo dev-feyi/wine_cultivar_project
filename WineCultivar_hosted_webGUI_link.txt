@@ -2,3 +2,5 @@ Adeleke Oluwafeyisikemi Nancy
 22CG031807
 Random Forest Classifier
 Joblib
+https://github.com/dev-feyi/wine_cultivar_project.git
+https://wine-cultivar-project-2p73.onrender.com
