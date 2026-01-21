@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wine Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #1a3c34; /* Deep Forest Green */
+            --accent-gold: #c5a059;
+            --bg-soft: #f4f7f6;
+            --text-main: #2c3e50;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-soft);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .app-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* Branding Header */
+        .brand-header {
+            grid-column: span 2;
+            text-align: left;
+            border-bottom: 2px solid var(--primary-dark);
+            padding-bottom: 20px;
+            margin-bottom: 10px;
+        }
+
+        .brand-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--primary-dark);
+        }
+
+        /* Input Section Styling */
+        .glass-panel {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid #e0e0e0;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: #7f8c8d;
+        }
+
+        input {
+            padding: 12px;
+            border: 1px solid #dcdde1;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.2);
+        }
+
+        /* Action Buttons */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-main { background: var(--primary-dark); color: white; flex-grow: 2; }
+        .btn-main:hover { background: #245348; }
+
+        .btn-outline { 
+            background: transparent; 
+            border: 1px solid var(--primary-dark); 
+            color: var(--primary-dark); 
+        }
+        .btn-outline:hover { background: #eee; }
+
+        /* Results Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .status-card {
+            background: var(--primary-dark);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .prediction-id {
+            font-size: 3rem;
+            font-family: 'Playfair Display', serif;
+            color: var(--accent-gold);
+        }
+
+        .progress-container {
+            margin-top: 15px;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        .bar-bg {
+            background: rgba(255,255,255,0.1);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            background: var(--accent-gold);
+            height: 100%;
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Utilities */
+        .hidden { display: none; }
+        @media (max-width: 900px) {
+            .app-wrapper { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+    <header class="brand-header">
+        <h1>Enology Lab <small style="font-size: 1rem; font-weight: 400; color: #666;">/ Chemical Classifier</small></h1>
+    </header>
+
+    <main class="glass-panel">
+        <form id="wineForm">
+            <div class="features-grid" id="inputContainer">
+                </div>
+
+            <div class="controls">
+                <button type="submit" class="btn btn-main">Run Analysis</button>
+                <button type="button" class="btn btn-outline" onclick="fetchSample(1)">Sample A</button>
+                <button type="button" class="btn btn-outline" onclick="fetchSample(2)">Sample B</button>
+                <button type="button" class="btn btn-outline" onclick="fetchSample(3)">Sample C</button>
+                <button type="button" class="btn btn-outline" style="border-color: #e74c3c; color: #e74c3c" onclick="resetForm()">Reset</button>
+            </div>
+        </form>
+    </main>
+
+    <aside class="sidebar">
+        <div id="outputArea" class="status-card">
+            <p id="placeholderText">Waiting for laboratory data...</p>
+            <div id="resultContent" class="hidden">
+                <p>Classification</p>
+                <div class="prediction-id" id="cultivarName">--</div>
+                <p id="confidenceLabel" style="color: var(--accent-gold)">0% Confidence</p>
+                
+                <div class="progress-container">
+                    <div class="bar-label"><span>Cultivar 1</span><span id="txt-c1">0%</span></div>
+                    <div class="bar-bg"><div class="bar-fill" id="bar-c1"></div></div>
+                </div>
+                <div class="progress-container">
+                    <div class="bar-label"><span>Cultivar 2</span><span id="txt-c2">0%</span></div>
+                    <div class="bar-bg"><div class="bar-fill" id="bar-c2"></div></div>
+                </div>
+                <div class="progress-container">
+                    <div class="bar-label"><span>Cultivar 3</span><span id="txt-c3">0%</span></div>
+                    <div class="bar-bg"><div class="bar-fill" id="bar-c3"></div></div>
+                </div>
+            </div>
+        </div>
+        <div id="errorMessage" class="hidden" style="color: #e74c3c; font-size: 0.9rem; text-align: center;"></div>
+    </aside>
+</div>
+
+<script>
+    const FEATURE_KEYS = [
+        'alcohol', 'malic_acid', 'ash', 'alcalinity_of_ash',
+        'magnesium', 'total_phenols', 'flavanoids', 'nonflavanoid_phenols',
+        'proanthocyanins', 'color_intensity', 'hue', 'od280/od315_of_diluted_wines',
+        'proline'
+    ];
+
+    // Initialize UI
+    const container = document.getElementById('inputContainer');
+    FEATURE_KEYS.forEach(key => {
+        const labelText = key.replace(/_/g, ' ');
+        container.innerHTML += `
+            <div class="input-group">
+                <label>${labelText}</label>
+                <input type="number" id="field-${key}" step="0.01" required placeholder="0.00">
+            </div>
+        `;
+    });
+
+    async function fetchSample(type) {
+        try {
+            const res = await fetch('/api/samples');
+            const result = await res.json();
+            if (result.status === 'success') {
+                const data = result.samples[`type_${type}`];
+                FEATURE_KEYS.forEach(key => {
+                    document.getElementById(`field-${key}`).value = data[key].toFixed(2);
+                });
+            }
+        } catch (err) { alert("Failed to load sample data"); }
+    }
+
+    function resetForm() {
+        document.getElementById('wineForm').reset();
+        document.getElementById('resultContent').classList.add('hidden');
+        document.getElementById('placeholderText').classList.remove('hidden');
+    }
+
+    document.getElementById('wineForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const payload = {};
+        FEATURE_KEYS.forEach(k => payload[k] = document.getElementById(`field-${k}`).value);
+
+        // UI Reset
+        document.getElementById('errorMessage').classList.add('hidden');
+        
+        try {
+            const response = await fetch('/api/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const resData = await response.json();
+
+            if (resData.status === 'success') {
+                const { prediction, distribution } = resData.data;
+                
+                document.getElementById('placeholderText').classList.add('hidden');
+                document.getElementById('resultContent').classList.remove('hidden');
+                
+                document.getElementById('cultivarName').innerText = prediction.name;
+                document.getElementById('confidenceLabel').innerText = `${prediction.score}% Match`;
+                
+                // Update Bars
+                ['C1', 'C2', 'C3'].forEach((c, idx) => {
+                    const val = distribution[c];
+                    document.getElementById(`bar-c${idx+1}`).style.width = val + '%';
+                    document.getElementById(`txt-c${idx+1}`).innerText = val + '%';
+                });
+            } else {
+                throw new Error(resData.message);
+            }
+        } catch (err) {
+            const errEl = document.getElementById('errorMessage');
+            errEl.innerText = err.message;
+            errEl.classList.remove('hidden');
+        }
+    });
+</script>
+</body>
+</html>
